@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="description"	content="A webpage about the increase in pet ownership in Australia during the COVID-19 pandemic and its positive impacts."/>
+	<meta name="keywords"		  content="HTML, CSS, Pets, Pandemic, COVID-19, Australia"/>
+	<meta name="author"			  content="AI Assistant"/>
+
+	<title>Pets and the Pandemic: A Look at Australian Pet Ownership</title>
+	<!-- Data Visualisation Exercise - COVID-19 Pet Ownership -->
+
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			line-height: 1.6;
+			background-color: #f4f4f4;
+			color: #333;
+		}
+		header, article, footer {
+			background-color: #fff;
+			padding: 20px;
+			margin-bottom: 20px;
+			border-radius: 8px;
+			box-shadow: 0 0 10px rgba(0,0,0,0.1);
+		}
+		h1, h2 {
+			color: #333;
+		}
+		h1 {
+			text-align: center;
+			margin-bottom: 10px;
+		}
+		h2 {
+			text-align: center;
+			margin-bottom: 20px;
+			font-style: italic;
+			color: #555;
+		}
+		p {
+			margin-bottom: 15px;
+		}
+		ul {
+			margin-bottom: 15px;
+			list-style-type: disc;
+			padding-left: 20px;
+		}
+		img {
+			max-width: 100%;
+			height: auto;
+			display: block;
+			margin: 15px auto;
+			border-radius: 4px;
+			box-shadow: 0 0 5px rgba(0,0,0,0.05);
+		}
+		.image-gallery {
+			display: flex;
+			justify-content: space-around;
+			flex-wrap: wrap;
+			margin-bottom: 20px;
+		}
+		.image-gallery img {
+			width: 30%; /* Adjust as needed */
+			min-width: 150px;
+			margin: 10px;
+		}
+		figure {
+			margin: 20px auto;
+			text-align: center;
+		}
+		figcaption {
+			font-style: italic;
+			color: #666;
+			margin-top: 5px;
+		}
+		footer {
+			text-align: center;
+			font-size: 0.9em;
+			color: #777;
+		}
+		/* Added styles for chart controls and dynamic figure */
+		#chart-controls {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+		#chart-controls button {
+			background-color: #007bff; /* Blue */
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			margin: 0 5px;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 1em;
+			transition: background-color 0.3s ease;
+		}
+		#chart-controls button:hover {
+			background-color: #0056b3; /* Darker blue */
+		}
+		#chart-controls button:focus {
+			outline: none;
+			box-shadow: 0 0 0 2px rgba(0,123,255,.5);
+		}
+		#dynamic-chart-figure img {
+			max-width: 100%;
+			height: auto;
+			display: block;
+			margin: 15px auto; /* Consistent with other images */
+			border-radius: 4px;
+			box-shadow: 0 0 5px rgba(0,0,0,0.05);
+		}
+	</style>
+
+</head>
+
+<body>
+	<header>
+		<h1>Pets and the Pandemic</h1>
+		<h2>How COVID-19 Changed Pet Ownership in Australia</h2>
+	</header>
+
+	<article>
+		<p>A report from Animal Medicines Australia (AMA) has found that many Australians took the opportunity to introduce a pet into their household during the pandemic. Their survey indicated that there was a significant increase in the percent of households taking in a new dog, fish or bird.</p>
+
+		<figure>
+			<img src="pet_ownership_in_australia_table.png" alt="Table showing pet ownership statistics in Australia for 2019 and 2021">
+			<figcaption>
+				Pet ownership trends in Australia (2019 vs 2021). <br>
+				Source: <a href="https://animalmedicinesaustralia.org.au/wp-content/uploads/2021/08/AMAU005-PATP-Report21_v1.41_WEB.pdf" target="_blank">Animal Medicines Australia - Pets and the Pandemic Report 2021</a>
+			</figcaption>
+		</figure>
+
+		<p>Their research also indicated that pets had a number of positive influences on their lives such as:</p>
+		<ul>
+			<li>Companionship</li>
+			<li>Better mental health</li>
+			<li>Joy and happiness.</li>
+		</ul>
+
+		<!-- Chart Controls and Dynamic Chart Display -->
+		<div id="chart-controls">
+			<button id="btn2019" aria-label="Show 2019 pet ownership data">2019 Data</button>
+			<button id="btn2021" aria-label="Show 2021 pet ownership data">2021 Data</button>
+			<button id="btnBoth" aria-label="Show comparison of 2019 and 2021 pet ownership data">Compare 2019 & 2021</button>
+		</div>
+
+		<figure id="dynamic-chart-figure">
+			<img id="chart-image" src="pets_2019.png" alt="Bar chart showing pet ownership percentages in Australia for 2019. Dogs were most popular (40%), followed by cats (27%).">
+			<figcaption id="chart-caption">
+				Pet ownership in Australia (2019). Dogs lead (40%), followed by Cats (27%). <br>
+				Source: Visualisation based on Animal Medicines Australia data.
+			</figcaption>
+		</figure>
+		<!-- End Chart Controls and Dynamic Chart Display -->
+
+		<p>With the increase in pet ownership the AMA are encouraging policy makers to consider the needs of companion animals and their owners when considering rental, strata and body corporate regulations are well as accepting animals in public places and transport.</p>
+
+		<div class="image-gallery">
+			<img src="dog.png" alt="A happy dog">
+			<img src="cat.jpg" alt="A curious cat">
+			<img src="fish.jpg" alt="Colorful fish in an aquarium">
+		</div>
+	</article>
+
+	<footer>COS30045 Data Visualisation - Exercise 1.1</footer>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const chartImage = document.getElementById('chart-image');
+			const chartCaption = document.getElementById('chart-caption');
+
+			const btn2019 = document.getElementById('btn2019');
+			const btn2021 = document.getElementById('btn2021');
+			const btnBoth = document.getElementById('btnBoth');
+
+			// Data for the charts - filenames, alt text, and captions
+			// Data from CSV: Dogs (40->47), Cats (27->30), Fish (11->13), Birds (9->14), Small M (3->5), Reptiles (2->4), Other (2->1)
+			const chartData = {
+				'2019': {
+					src: 'pets_2019.png',
+					alt: 'Bar chart of pet ownership in Australia for 2019. Dogs are the most popular at 40%, cats at 27%, fish at 11%, birds at 9%, small mammals at 3%, reptiles at 2%, and other pets at 2%.',
+					caption: 'Pet ownership in Australia (2019). <br>Source: Visualisation based on Animal Medicines Australia data.'
+				},
+				'2021': {
+					src: 'pets_2021.png',
+					alt: 'Bar chart of pet ownership in Australia for 2021. Dogs are the most popular at 47%, cats at 30%, fish at 13%, birds at 14%, small mammals at 5%, reptiles at 4%, and other pets at 1%. Birds showed a notable increase from 9% to 14%.',
+					caption: 'Pet ownership in Australia (2021). <br>Source: Visualisation based on Animal Medicines Australia data.'
+				},
+				'both': {
+					src: 'pets_comparison_2019_2021.png',
+					alt: 'Grouped bar chart comparing pet ownership in Australia for 2019 and 2021. Shows percentage point changes for each pet type, e.g., Dogs +7, Cats +3, Birds +5.',
+					caption: 'Comparison of pet ownership in Australia (2019 vs 2021). <br>Source: Visualisation based on Animal Medicines Australia data.'
+				}
+			};
+
+			function updateChart(view) {
+				if (chartImage && chartCaption && chartData[view]) {
+					chartImage.src = chartData[view].src;
+					chartImage.alt = chartData[view].alt;
+					chartCaption.innerHTML = chartData[view].caption; // Using innerHTML due to <br>
+				} else {
+					console.error('Chart elements or data not found for view:', view);
+				}
+			}
+
+			if (btn2019) {
+				btn2019.addEventListener('click', function() {
+					updateChart('2019');
+				});
+			} else {
+				console.error('Button for 2019 not found');
+			}
+
+			if (btn2021) {
+				btn2021.addEventListener('click', function() {
+					updateChart('2021');
+				});
+			} else {
+				console.error('Button for 2021 not found');
+			}
+
+			if (btnBoth) {
+				btnBoth.addEventListener('click', function() {
+					updateChart('both');
+				});
+			} else {
+				console.error('Button for Both not found');
+			}
+
+			// Initialize with the 2019 chart view by default
+			updateChart('2019');
+		});
+	</script>
+</body>
+</html>
