@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenhouse Plant Growth Metrics</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .chart-container {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        svg {
+            display: block;
+            margin: auto;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-size: 10px;
+        }
+        .legend {
+            font-size: 12px;
+        }
+        .legend rect {
+            stroke-width: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Greenhouse Plant Growth Metrics Visualization</h1>
+
+    <div id="bar-charts-container" class="chart-container">
+        <h2>Average Metrics by Class (Bar Charts)</h2>
+    </div>
+
+    <div id="box-plots-container" class="chart-container">
+        <h2>Metric Distributions by Class (Box Plots)</h2>
+    </div>
+
+    <div id="parallel-coordinates-container" class="chart-container">
+        <h2>Parallel Coordinates Plot</h2>
+        <div id="parallel-coordinates-chart"></div>
+    </div>
+
+    <div class="tooltip"></div>
+
+    <script>
+        const csvFilePath = 'Greenhouse Plant Growth Metrics.csv';
+        const numericalColumns = [
+            'ACHP', 'PHR', 'AWWGV', 'ALAP', 'ANPL', 'ARD', 
+            'ADWR', 'PDMVG', 'ARL', 'AWWR', 'ADWV', 'PDMRG'
+        ];
+        const categoricalColumn = 'Class';
+        const classes = ['SA', 'SB', 'SC', 'TA', 'TB', 'TC'];
+
+        // Color scale for classes
+        const color = d3.scaleOrdinal(d3.schemeCategory10).domain(classes);
+
+        // General chart dimensions
+        const margin = {top: 60, right: 30, bottom: 70, left: 70}; // Adjusted for labels
+        const defaultWidth = 800 - margin.left - margin.right;
+        const defaultHeight = 500 - margin.top - margin.bottom;
+
+        // Tooltip
+        const tooltip = d3.select(".tooltip");
+
+        // Load and process data
+        d3.csv(csvFilePath).then(function(data) {
+            data.forEach(d => {
+                numericalColumns.forEach(col => {
+                    d[col] = +d[col]; // Convert to number
+                });
+            });
+            console.log("Data loaded and processed:", data.slice(0, 2)); // Log a sample to console
+
+            // Call visualization functions here
+            createBarCharts(data);
+            createBoxPlots(data);
+            createParallelCoordinates(data);
+
+        }).catch(function(error) {
+            console.error('Error loading or parsing CSV:', error);
+            document.body.innerHTML = `<p style="color: red; text-align: center; font-size: 1.5em;">Error loading data. Please ensure '${csvFilePath}' is accessible and correctly formatted. Check the browser console for more details.</p>`;
+        });
+
+        // Placeholder for utility function to create a legend
+        function createLegend(svg, classNames, colorScale, xOffset = 20, yOffset = 20) {
+            const legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(${xOffset}, ${yOffset})`);
+
+            const legendItemSize = 18;
+            const legendSpacing = 4;
+
+            classNames.forEach((className, i) => {
+                const legendItem = legend.append("g")
+                    .attr("transform", `translate(0, ${i * (legendItemSize + legendSpacing)})`);
+
+                legendItem.append("rect")
+                    .attr("width", legendItemSize)
+                    .attr("height", legendItemSize)
+                    .style("fill", colorScale(className))
+                    .style("stroke", d3.rgb(colorScale(className)).darker());
+
+                legendItem.append("text")
+                    .attr("x", legendItemSize + legendSpacing)
+                    .attr("y", legendItemSize / 2)
+                    .attr("dy", "0.35em")
+                    .text(className);
+            });
+        }
+        
+        // --- Visualization Functions (to be implemented) ---
+
+        function createBarCharts(data) {
+            const container = d3.select("#bar-charts-container");
+            container.append("p").text("Bar charts will show average values for each metric, grouped by class.");
+            // Implementation will go here
+            console.log("Bar chart function called");
+
+            numericalColumns.forEach(metric => {
+                const chartWidth = defaultWidth / 2 - margin.left - margin.right; // Smaller charts
+                const chartHeight = defaultHeight / 2 - margin.top - margin.bottom;
+
+                const svg = container.append("svg")
+                    .attr("width", chartWidth + margin.left + margin.right)
+                    .attr("height", chartHeight + margin.top + margin.bottom)
+                  .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                svg.append("text")
+                    .attr("x", chartWidth / 2)
+                    .attr("y", 0 - (margin.top / 2))
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "14px")
+                    .style("text-decoration", "underline")
+                    .text(`Average ${metric} by Class`);
+
+                // Calculate average metric value for each class
+                const averageData = classes.map(cls => {
+                    const classData = data.filter(d => d[categoricalColumn] && d[categoricalColumn].startsWith(cls)); // Handle cases like SA, SAR1
+                    const mean = d3.mean(classData, d => d[metric]);
+                    return { class: cls, value: mean || 0 }; // Use 0 if mean is undefined (no data for class)
+                });
+
+                const x = d3.scaleBand()
+                    .range([0, chartWidth])
+                    .domain(averageData.map(d => d.class))
+                    .padding(0.2);
+
+                svg.append("g")
+                    .attr("transform", `translate(0,${chartHeight})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .attr("transform", "translate(-10,0)rotate(-45)")
+                    .style("text-anchor", "end");
+
+                const yMax = d3.max(averageData, d => d.value);
+                const y = d3.scaleLinear()
+                    .domain([0, yMax > 0 ? yMax : 1]) // Ensure domain is not [0,0]
+                    .range([chartHeight, 0]);
+
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+                
+                svg.append("text") // Y-axis label
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 0 - margin.left + 20)
+                    .attr("x", 0 - (chartHeight / 2))
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .style("font-size", "10px")
+                    .text(metric);
+
+
+                svg.selectAll(".bar")
+                    .data(averageData)
+                    .enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("x", d => x(d.class))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => chartHeight - y(d.value))
+                    .attr("fill", d => color(d.class))
+                    .on("mouseover", function(event, d) {
+                        tooltip.transition().duration(200).style("opacity", .9);
+                        tooltip.html(`Class: ${d.class}<br/>Avg ${metric}: ${d.value.toFixed(2)}`)
+                            .style("left", (event.pageX + 5) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function(d) {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
+            });
+        }
+
+        function createBoxPlots(data) {
+            const container = d3.select("#box-plots-container");
+            container.append("p").text("Box plots will show the distribution (median, quartiles, min/max) for each metric, grouped by class.");
+            // Implementation will go here
+            console.log("Box plot function called");
+
+            numericalColumns.forEach(metric => {
+                const chartWidth = defaultWidth; 
+                const chartHeight = defaultHeight / 1.5;
+
+                const svg = container.append("svg")
+                    .attr("width", chartWidth + margin.left + margin.right)
+                    .attr("height", chartHeight + margin.top + margin.bottom)
+                  .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                svg.append("text")
+                    .attr("x", chartWidth / 2)
+                    .attr("y", 0 - (margin.top / 2))
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .style("text-decoration", "underline")
+                    .text(`Distribution of ${metric} by Class`);
+
+                // Prepare data for box plots: {class: string, values: number[]}
+                let classValueMap = new Map();
+                classes.forEach(cls => classValueMap.set(cls, []));
+
+                data.forEach(d => {
+                    classes.forEach(cls => {
+                        if (d[categoricalColumn] && d[categoricalColumn].startsWith(cls) && d[metric] != null) {
+                           classValueMap.get(cls).push(d[metric]);
+                        }
+                    });
+                });
+                
+                const summarizedData = [];
+                let allValues = [];
+                classValueMap.forEach((values, cls) => {
+                    if (values.length > 0) {
+                        values.sort(d3.ascending);
+                        allValues = allValues.concat(values);
+                        const q1 = d3.quantile(values, 0.25);
+                        const median = d3.quantile(values, 0.5);
+                        const q3 = d3.quantile(values, 0.75);
+                        const interQuantileRange = q3 - q1;
+                        const min = Math.max(d3.min(values), q1 - 1.5 * interQuantileRange); // Non-outlier min
+                        const max = Math.min(d3.max(values), q3 + 1.5 * interQuantileRange); // Non-outlier max
+                        summarizedData.push({class: cls, q1: q1, median: median, q3: q3, min: min, max: max});
+                    } else {
+                         summarizedData.push({class: cls, q1: 0, median: 0, q3: 0, min: 0, max: 0}); // Placeholder for empty data
+                    }
+                });
+
+
+                const x = d3.scaleBand()
+                    .range([0, chartWidth])
+                    .domain(classes)
+                    .paddingInner(1)
+                    .paddingOuter(.5);
+
+                svg.append("g")
+                    .attr("transform", `translate(0, ${chartHeight})`)
+                    .call(d3.axisBottom(x));
+
+                const yMinVal = d3.min(allValues);
+                const yMaxVal = d3.max(allValues);
+
+                const y = d3.scaleLinear()
+                     .domain([yMinVal > 0 ? yMinVal * 0.9 : yMinVal * 1.1, yMaxVal > 0 ? yMaxVal * 1.1 : yMaxVal * 0.9 ]) // Add some padding
+                     .range([chartHeight, 0]);
+                
+                if (yMinVal === undefined || yMaxVal === undefined || yMinVal === yMaxVal) { // Handle empty or single-value data
+                    y.domain([0,1]);
+                }
+
+
+                svg.append("g").call(d3.axisLeft(y));
+                
+                svg.append("text") // Y-axis label
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 0 - margin.left + 20)
+                    .attr("x", 0 - (chartHeight / 2))
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .style("font-size", "12px")
+                    .text(metric);
+
+                // Show the main vertical line
+                svg.selectAll(".vertLines")
+                    .data(summarizedData)
+                    .enter()
+                    .append("line")
+                    .attr("x1", d => x(d.class))
+                    .attr("x2", d => x(d.class))
+                    .attr("y1", d => y(d.min))
+                    .attr("y2", d => y(d.max))
+                    .attr("stroke", "black")
+                    .style("width", 40);
+
+                // Rectangle for the main box
+                const boxWidth = 50;
+                svg.selectAll(".boxes")
+                    .data(summarizedData)
+                    .enter()
+                    .append("rect")
+                    .attr("x", d => x(d.class) - boxWidth/2)
+                    .attr("y", d => y(d.q3))
+                    .attr("height", d => (y(d.q1)-y(d.q3)) > 0 ? (y(d.q1)-y(d.q3)) : 1) // Min height 1
+                    .attr("width", boxWidth)
+                    .attr("stroke", "black")
+                    .style("fill", d => color(d.class))
+                    .on("mouseover", function(event, d_box) {
+                        tooltip.transition().duration(200).style("opacity", .9);
+                        tooltip.html(
+                            `Class: ${d_box.class}<br/>` +
+                            `Max: ${d_box.max.toFixed(2)}<br/>` +
+                            `Q3: ${d_box.q3.toFixed(2)}<br/>` +
+                            `Median: ${d_box.median.toFixed(2)}<br/>` +
+                            `Q1: ${d_box.q1.toFixed(2)}<br/>` +
+                            `Min: ${d_box.min.toFixed(2)}`
+                        )
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 30) + "px");
+                    })
+                    .on("mouseout", function(d_box) {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
+
+                // Show the median line
+                svg.selectAll(".medianLines")
+                    .data(summarizedData)
+                    .enter()
+                    .append("line")
+                    .attr("x1", d => x(d.class)-boxWidth/2)
+                    .attr("x2", d => x(d.class)+boxWidth/2)
+                    .attr("y1", d => y(d.median))
+                    .attr("y2", d => y(d.median))
+                    .attr("stroke", "black")
+                    .style("width", 80);
+                
+                // Min whisker
+                svg.selectAll(".minLines")
+                    .data(summarizedData)
+                    .enter()
+                    .append("line")
+                    .attr("x1", d => x(d.class)-boxWidth/4)
+                    .attr("x2", d => x(d.class)+boxWidth/4)
+                    .attr("y1", d => y(d.min))
+                    .attr("y2", d => y(d.min))
+                    .attr("stroke", "black")
+                    .style("width", 80);
+
+                // Max whisker
+                svg.selectAll(".maxLines")
+                    .data(summarizedData)
+                    .enter()
+                    .append("line")
+                    .attr("x1", d => x(d.class)-boxWidth/4)
+                    .attr("x2", d => x(d.class)+boxWidth/4)
+                    .attr("y1", d => y(d.max))
+                    .attr("y2", d => y(d.max))
+                    .attr("stroke", "black")
+                    .style("width", 80);
+            });
+        }
+
+        function createParallelCoordinates(data) {
+            const container = d3.select("#parallel-coordinates-chart");
+            //container.append("p").text("Parallel Coordinates Plot will show all features for each sample, colored by class.");
+             console.log("Parallel Coordinates function called");
+
+            const pcWidth = defaultWidth + 100; // Wider for PCP
+            const pcHeight = defaultHeight;
+
+            const svg = container.append("svg")
+                .attr("width", pcWidth + margin.left + margin.right)
+                .attr("height", pcHeight + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const dimensions = numericalColumns; // Use all numerical columns
+
+            const yScales = {};
+            dimensions.forEach(dim => {
+                const extent = d3.extent(data, d => d[dim]);
+                 const domainPadding = (extent[1] - extent[0]) * 0.05; // 5% padding
+                yScales[dim] = d3.scaleLinear()
+                    .domain([extent[0] - domainPadding, extent[1] + domainPadding])
+                    .range([pcHeight, 0]);
+            });
+
+            const x = d3.scalePoint()
+                .range([0, pcWidth])
+                .padding(1)
+                .domain(dimensions);
+
+            // Draw the lines
+            svg.selectAll(".line")
+                .data(data)
+                .enter().append("path")
+                .attr("class", "line")
+                .attr("d", path)
+                .style("fill", "none")
+                .style("stroke", d => color(d[categoricalColumn] ? d[categoricalColumn].substring(0,2) : "Unknown"))
+                .style("opacity", 0.3)
+                .style("stroke-width", "1.5px")
+                .on("mouseover", function(event, d_line) {
+                    d3.select(this).style("stroke-width", "3px").style("opacity", 1);
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    let tooltipText = `Class: ${d_line[categoricalColumn]} (Sample: ${d_line.Random})<br/>`;
+                    dimensions.forEach(dim => {
+                        tooltipText += `${dim}: ${d_line[dim].toFixed(2)}<br/>`;
+                    });
+                    tooltip.html(tooltipText)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mouseout", function(d_line) {
+                    d3.select(this).style("stroke-width", "1.5px").style("opacity", 0.3);
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+
+            // Draw the axes
+            const pcpAxes = svg.selectAll(".dimension")
+                .data(dimensions)
+                .enter().append("g")
+                .attr("class", "dimension")
+                .attr("transform", d => `translate(${x(d)},0)`);
+
+            pcpAxes.append("g")
+                .attr("class", "axis")
+                .each(function(d) { d3.select(this).call(d3.axisLeft().scale(yScales[d])); })
+                .append("text")
+                .style("text-anchor", "middle")
+                .attr("y", -15) // Position above the axis
+                .attr("transform", "rotate(-10)") //Slightly rotate for better readability
+                .text(d => d)
+                .style("fill", "black")
+                .style("font-size", "10px");
+            
+            // Add legend for Parallel Coordinates
+            const pcpLegendContainer = svg.append("g")
+                .attr("transform", `translate(${pcWidth - 100}, ${-margin.top + 50 })`);
+            createLegend(pcpLegendContainer, classes, color, 0,0);
+
+            function path(d) {
+                return d3.line()(dimensions.map(p => [x(p), yScales[p](d[p])]));
+            }
+        }
+
+    </script>
+</body>
+</html> 
